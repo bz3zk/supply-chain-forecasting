@@ -1,15 +1,18 @@
 import streamlit as st
 import numpy as np
+from pages.models import get_forecast
 import altair as alt
-import pandas as pd
+# import pandas as pd
+from typing import cast
 
-from models import get_forecast
+st.set_page_config(
+    page_title='Supply Chain Forecasting',
+    page_icon=':chart_with_upwards_trend:'
+)
 
 @st.cache_data
 def get_data():
     d = np.random.randint(1,50,20).tolist()
-    # p = np.random.randint(3,8)
-    # d = [28, 19, 18, 13, 19, 16, 19, 18, 13, 16, 16, 11, 18, 15, 13, 15, 13, 11, 13, 10, 12] #! Uncomment for static values
     df = get_forecast(d, extra_periods=4, n=3)
     df.index.name = 'Period'
     
@@ -23,10 +26,16 @@ st.markdown(f"""
     Forecasting using several statistical models (no ML yet).
 """)
 
+selectedOptions = cast(list, st.multiselect(
+    "Select Models", dataframe.columns.tolist(), default=dataframe.columns.tolist()
+))
+
+st.space("small")
+
 nearest = alt.selection_point(nearest=True, on='pointerover', fields=['y'], empty=False)
 
 chart = alt.Chart(dataframe.reset_index()).transform_fold(
-        ['Demand','fm01','fm02'],
+        selectedOptions,
         as_=['model','value']
     ).mark_line(interpolate='basis').encode(
     x='Period:Q',
@@ -35,7 +44,7 @@ chart = alt.Chart(dataframe.reset_index()).transform_fold(
 )
 
 selectors = alt.Chart(dataframe.reset_index()).transform_fold(
-        ['Demand','fm01','fm02'],
+        selectedOptions,
         as_=['model','value']
     ).mark_point().encode(
     y='value:Q',
@@ -54,7 +63,7 @@ text = chart.mark_text(align='left', dx=5, dy=-5).encode(
 )
 
 rules = alt.Chart(dataframe.reset_index()).transform_fold(
-        ['Demand','fm01','fm02'],
+        selectedOptions,
         as_=['model','value']
     ).mark_rule(color='gray').encode(
         x='Period:Q'
@@ -66,12 +75,12 @@ st.altair_chart(
     alt.layer(
         chart, selectors
     ).properties(
-        width=600, height=300
+        width=900, height=300
     )
 )
 
 st.markdown(f"""
-    ### Demand and Forecast Values
+    ### Demand Values
     Randomly generated demand values for the last 20 periods. The forecast is based on these values.""")
 
-st.dataframe(dataframe, hide_index=True)
+st.dataframe(dataframe)

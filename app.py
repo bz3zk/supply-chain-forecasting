@@ -1,17 +1,17 @@
 import streamlit as st
 
-# Main entry point for the Streamlit App
+#! Main entry point for the Streamlit App
+
+forecast_page = st.Page("./pages/forecast.py", title="Forecast", icon=":material/chart_data:", default=True)
+about_page = st.Page("./pages/about.py", title="About", icon=":material/info:")
+
+st.sidebar.title("Supply Chain Forecasting")
+
+pg = st.navigation([forecast_page, about_page])
 
 st.set_page_config(
     page_title='Supply Chain Forecasting',
     page_icon=':chart_with_upwards_trend:'
 )
-
-pg = st.navigation([
-    st.Page("./pages/charts.py", title="Charts", icon=":material/chart_data:", default=True),
-    st.Page("./pages/models.py", title="Models", icon=":material/cognition:"),
-    st.Page("./pages/data.py", title="Data", icon=":material/dataset:"),
-    st.Page("./pages/about.py", title="About", icon=":material/info:")
-    ])
 
 pg.run()
